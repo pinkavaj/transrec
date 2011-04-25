@@ -17,15 +17,29 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
-    paError = Pa_OpenDefaultStream(&stream, 0, 1, paInt16, 22050, 0,
-                                   paCallBack_, this);
+    struct PaStreamParameters inputPar;
+    inputPar.channelCount = 1;
+    inputPar.device = Pa_GetDefaultInputDevice();
+    inputPar.sampleFormat = paInt16;
+    inputPar.hostApiSpecificStreamInfo = NULL;
+    inputPar.suggestedLatency = 1;
+
+    paError = Pa_OpenStream(&stream, &inputPar, NULL, 22050, 0,
+                                   paNoFlag, paCallBack_, this);
     if (paError != paNoError) {
-        QMessageBox::critical(this, "Pa_Initialize error",
+        QMessageBox::critical(this, "Pa_OpenDefaultStream error",
                               QString("error: %1").arg(paError));
         this->close();
         return;
     }
 
+    paError = Pa_StartStream(this->stream);
+    if (paError != paNoError) {
+        QMessageBox::critical(this, "Pa_StartStream error",
+                              QString("error: %1").arg(paError));
+        this->close();
+        return;
+    }
 }
 
 
@@ -34,7 +48,9 @@ int MainWindow::paCallBack(const void *input, void *output,
                            const PaStreamCallbackTimeInfo *timeInfo,
                            PaStreamCallbackFlags statusFlags)
 {
-    return -1;
+    ui->eventsSpinBox->setValue(
+                ui->eventsSpinBox->value() + 1);
+    return paContinue;
 }
 
 int MainWindow::paCallBack_(const void *input, void *output,

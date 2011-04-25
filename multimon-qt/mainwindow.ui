@@ -35,6 +35,9 @@
     <item row="1" column="0" colspan="3">
      <widget class="QPlainTextEdit" name="logPlainTextEdit"/>
     </item>
+    <item row="2" column="0">
+     <widget class="QSpinBox" name="eventsSpinBox"/>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
