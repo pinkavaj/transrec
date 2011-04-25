@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "portaudio.h"
 
 namespace Ui {
     class MainWindow;
@@ -17,6 +18,15 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    PaStream *stream;
+    int paCallBack(const void *input, void *output,
+                   unsigned long frameCount,
+                   const PaStreamCallbackTimeInfo *timeInfo,
+                   PaStreamCallbackFlags statusFlags);
+    static int paCallBack_(const void *input, void *output,
+                          unsigned long frameCount,
+                          const PaStreamCallbackTimeInfo *timeInfo,
+                          PaStreamCallbackFlags statusFlags, void *userData);
 };
 
 #endif // MAINWINDOW_H
