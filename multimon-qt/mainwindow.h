@@ -19,8 +19,10 @@ public:
 
 private slots:
     void on_logFileToolButton_clicked();
-
     void on_logFileCheckBox_toggled(bool checked);
+    void on_recDirNameToolButton_clicked();
+
+    void on_recCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;

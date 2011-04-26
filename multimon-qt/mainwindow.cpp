@@ -58,7 +58,7 @@ int MainWindow::paCallBack(const void *input, void *output,
 
     // TODO: size
     //demod_zvei.demod(&zvei_st, buf, frameCount);
-    if (ui->logFileCheckBox->isChecked()) {
+    if (ui->logCheckBox->isChecked()) {
         // TODO: write output to file
     }
     return paContinue;
@@ -97,12 +97,27 @@ void MainWindow::on_logFileToolButton_clicked()
     QString logFileName;
 
     logFileName = QFileDialog::getSaveFileName(this, "Get log file name.");
-    ui->logFileLineEdit->setText(logFileName);
+    ui->logFileNameLineEdit->setText(logFileName);
 }
 
 void MainWindow::on_logFileCheckBox_toggled(bool checked)
 {
     ui->logFileToolButton->setEnabled(!checked);
-    ui->logFileLineEdit->setReadOnly(checked);
-    // TODO: start/stop recording evenst
+    ui->logFileNameLineEdit->setReadOnly(checked);
+    // TODO: start/stop logging evenst
+}
+
+void MainWindow::on_recDirNameToolButton_clicked()
+{
+    QString recDirName;
+
+    recDirName = QFileDialog::getExistingDirectory(this, "Get log file name.");
+    ui->recDirNameLineEdit->setText(recDirName);
+}
+
+void MainWindow::on_recCheckBox_toggled(bool checked)
+{
+    ui->recDirNameLineEdit->setReadOnly(checked);
+    ui->recDirNameToolButton->setEnabled(!checked);
+    // TODO: start/ stop recording
 }
