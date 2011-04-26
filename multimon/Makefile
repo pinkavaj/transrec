@@ -88,6 +88,10 @@ $(BINDIR)/mkcostab:	$(BINDIR)/mkcostab.o
 costabi.c costabf.c:	$(BINDIR)/mkcostab
 			$(BINDIR)/mkcostab
 
+lib: $(OBJ_L2) $(OBJ_L1)
+	$(CC) -shared -Wl,-soname,libmultimon.so.0 -o $(BINDIR)/libmultimon.so $(OBJ_L2) $(OBJ_L1)
+	ar rcs $(BINDIR)/libmultimon.a $(OBJ_L2) $(OBJ_L1)
+
 clean:
 		$(RM) -f core `find . -name '*.[oas]' -print`
 		$(RM) -f core `find . -name 'core' -print`
