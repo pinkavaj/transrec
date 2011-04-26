@@ -4,6 +4,7 @@
 #
 #-------------------------------------------------
 
+#LIBS     += -lportaudio -lmultimon -L../multimon/bin-i686
 LIBS     += -lportaudio
 QT       += core gui
 

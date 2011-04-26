@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "portaudio.h"
+#include "../multimon/multimon.h"
 
 namespace Ui {
     class MainWindow;
@@ -16,9 +17,16 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_logFileToolButton_clicked();
+
+    void on_logFileCheckBox_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     PaStream *stream;
+    demod_state zvei_st;
+
     int paCallBack(const void *input, void *output,
                    unsigned long frameCount,
                    const PaStreamCallbackTimeInfo *timeInfo,

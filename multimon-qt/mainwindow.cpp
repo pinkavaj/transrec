@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QFileDialog>
 #include <QMessageBox>
+
+//void verbprintf();
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,12 +23,13 @@ MainWindow::MainWindow(QWidget *parent) :
     struct PaStreamParameters inputPar;
     inputPar.channelCount = 1;
     inputPar.device = Pa_GetDefaultInputDevice();
-    inputPar.sampleFormat = paInt16;
+    inputPar.sampleFormat = paFloat32;
     inputPar.hostApiSpecificStreamInfo = NULL;
     inputPar.suggestedLatency = 1;
 
-    paError = Pa_OpenStream(&stream, &inputPar, NULL, 22050, 0,
-                                   paNoFlag, paCallBack_, this);
+    //paError = Pa_OpenStream(&stream, &inputPar, NULL, demod_zvei.samplerate,
+    paError = Pa_OpenStream(&stream, &inputPar, NULL, 22050,
+                            0, paNoFlag, paCallBack_, this);
     if (paError != paNoError) {
         QMessageBox::critical(this, "Pa_OpenDefaultStream error",
                               QString("error: %1").arg(paError));
@@ -33,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
+    //demod_zvei.init(&zvei_st);
+    // TODO: ...
     paError = Pa_StartStream(this->stream);
     if (paError != paNoError) {
         QMessageBox::critical(this, "Pa_StartStream error",
@@ -48,8 +54,13 @@ int MainWindow::paCallBack(const void *input, void *output,
                            const PaStreamCallbackTimeInfo *timeInfo,
                            PaStreamCallbackFlags statusFlags)
 {
-    ui->eventsSpinBox->setValue(
-                ui->eventsSpinBox->value() + 1);
+    float *buf = (float *)input;
+
+    // TODO: size
+    //demod_zvei.demod(&zvei_st, buf, frameCount);
+    if (ui->logFileCheckBox->isChecked()) {
+        // TODO: write output to file
+    }
     return paContinue;
 }
 
@@ -79,4 +90,19 @@ MainWindow::~MainWindow()
         QMessageBox::critical(this, "Pa_Terminate error",
                               QString("error: %1").arg(paError));
     delete ui;
+}
+
+void MainWindow::on_logFileToolButton_clicked()
+{
+    QString logFileName;
+
+    logFileName = QFileDialog::getSaveFileName(this, "Get log file name.");
+    ui->logFileLineEdit->setText(logFileName);
+}
+
+void MainWindow::on_logFileCheckBox_toggled(bool checked)
+{
+    ui->logFileToolButton->setEnabled(!checked);
+    ui->logFileLineEdit->setReadOnly(checked);
+    // TODO: start/stop recording evenst
 }
