@@ -119,5 +119,28 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
 {
     ui->recDirNameLineEdit->setReadOnly(checked);
     ui->recDirNameToolButton->setEnabled(!checked);
+    if (checked) {
+        QString recDirName;
+        QDir recDir;
+
+        recDirName = ui->recDirNameLineEdit->text();
+        recDir.setPath(recDirName);
+        if (!recDir.exists()) {
+            QMessageBox::StandardButton createRecDir;
+
+            createRecDir = QMessageBox::question(this,
+                                                 "Create recording directory",
+                                  QString(
+                                      "Selected directory does not exists.\n"
+                                      "Create directory for recoring?\n"
+                                      "\"%1\"").arg(recDirName),
+                                  QMessageBox::Yes | QMessageBox::No);
+            if (createRecDir != QMessageBox::Yes) {
+                ui->recCheckBox->setChecked(false);
+                return;
+            }
+            //recDir.create_or_so()
+        }
+    }
     // TODO: start/ stop recording
 }
