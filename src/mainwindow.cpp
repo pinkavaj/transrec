@@ -3,7 +3,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-//void verbprintf();
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,8 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     inputPar.hostApiSpecificStreamInfo = NULL;
     inputPar.suggestedLatency = 1;
 
-    //paError = Pa_OpenStream(&stream, &inputPar, NULL, demod_zvei.samplerate,
-    paError = Pa_OpenStream(&stream, &inputPar, NULL, 22050,
+    paError = Pa_OpenStream(&stream, &inputPar, NULL, demod_zvei.samplerate,
                             0, paNoFlag, paCallBack_, this);
     if (paError != paNoError) {
         QMessageBox::critical(this, "Pa_OpenDefaultStream error",
@@ -37,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
-    //demod_zvei.init(&zvei_st);
+    demod_zvei.init(&zvei_st);
     // TODO: ...
     paError = Pa_StartStream(this->stream);
     if (paError != paNoError) {
@@ -57,7 +55,7 @@ int MainWindow::paCallBack(const void *input, void *output,
     float *buf = (float *)input;
 
     // TODO: size
-    //demod_zvei.demod(&zvei_st, buf, frameCount);
+    demod_zvei.demod(&zvei_st, buf, frameCount);
     if (ui->logCheckBox->isChecked()) {
         // TODO: write output to file
     }

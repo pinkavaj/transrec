@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "portaudio.h"
-#include "../multimon/multimon.h"
+#include <multimon.h>
+#include <portaudio.h>
 
 namespace Ui {
     class MainWindow;
