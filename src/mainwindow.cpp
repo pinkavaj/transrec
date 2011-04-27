@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+const char MainWindow::cfgLogFileName[] = "log file name";
+const char MainWindow::cfgRecDirname[] = "rec dir name";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -11,6 +13,11 @@ MainWindow::MainWindow(QWidget *parent) :
     PaError paError;
 
     ui->setupUi(this);
+    ui->logFileNameLineEdit->setText(
+                settings.value(cfgLogFileName, QString()).toString());
+    ui->recDirNameLineEdit->setText(
+                settings.value(cfgRecDirname, QString()).toString());
+
     paError = Pa_Initialize();
     if (paError != paNoError) {
         QMessageBox::critical(this, "Pa_Initialize error",
@@ -75,6 +82,9 @@ int MainWindow::paCallBack_(const void *input, void *output,
 MainWindow::~MainWindow()
 {
     PaError paError;
+
+    settings.setValue(cfgLogFileName, ui->logFileNameLineEdit->text());
+    settings.setValue(cfgRecDirname, ui->recDirNameLineEdit->text());
 
     if (this->stream != NULL) {
         paError = Pa_CloseStream(this->stream);

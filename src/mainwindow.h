@@ -1,9 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
 #include <multimon.h>
 #include <portaudio.h>
+#include <QMainWindow>
+#include <QSettings>
 
 namespace Ui {
     class MainWindow;
@@ -25,8 +26,12 @@ private slots:
     void on_recCheckBox_toggled(bool checked);
 
 private:
-    Ui::MainWindow *ui;
+    static const char cfgLogFileName[];
+    static const char cfgRecDirname[];
+
+    QSettings settings;
     PaStream *stream;
+    Ui::MainWindow *ui;
     demod_state zvei_st;
 
     int paCallBack(const void *input, void *output,
