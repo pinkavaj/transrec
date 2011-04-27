@@ -1,3 +1,18 @@
-motorola - selec 5
-http://www.genave.com/zvei_paging_codes.htm
+Transrec
+
+Program for recording analog audio broadcasts from transceiver and
+decode some of digital data in broadcast (pager codes, regular data 
+transmissions)
+
+This program was initialy created in order to record comunication from
+transceiver in firemens station and decode digital codes similar to
+pager codes. This codes identify requested action and/or radio station
+from which is broadcast come from.
+
+This aplication is multiplatform, focus has ben taken mainly to Linux and
+MS Windows. Application provides simple Qt4 GUI for operator, for audio
+operations is used portaudio library, for decoding gidital signals
+is used multimon-lib - library based on original multimon program.
+
+Good luck.
 
