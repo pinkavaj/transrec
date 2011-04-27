@@ -4,8 +4,7 @@
 #
 #-------------------------------------------------
 
-#LIBS     += -lportaudio -lmultimon -L../multimon/bin-i686
-LIBS     += -lportaudio
+LIBS     += -lportaudio -lmultimon
 QT       += core gui
 
 TARGET = multimon-qt
