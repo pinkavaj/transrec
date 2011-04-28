@@ -78,6 +78,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+bool MainWindow::isRecording()
+{
+    return recWavFile != NULL;
+}
+
 void MainWindow::on_logCheckBox_toggled(bool checked)
 {
     if (checked) {
@@ -148,26 +153,10 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
                 return;
             }
         }
-        // FIXME: this is hack for testing pusposes only
-        QDateTime t = QDateTime::currentDateTime();
-        QDateTime tu = t.toUTC();
-        int zoneOffs;
-
-        tu.setTimeSpec(t.timeSpec());
-        zoneOffs = tu.secsTo(t) / 3600 * 100;
-
-        recDirName = recDirName + "/rec_%1%2%3.wav";
-        recDirName = recDirName.arg(t.toString(Qt::ISODate));
-        if (zoneOffs >= 0)
-            recDirName = recDirName.arg("+");
-        else
-            recDirName = recDirName.arg("");
-        recDirName = recDirName.arg(zoneOffs, 4, 10, QLatin1Char('0'));
-        recFile.setFileName(recDirName);
-        recFile.open(QFile::WriteOnly);
+        recStart();
     }
     else
-        recFile.close();
+        recStop();
 
     ui->recDirNameLineEdit->setReadOnly(checked);
     ui->recDirNameToolButton->setEnabled(!checked);
@@ -197,31 +186,9 @@ int MainWindow::paCallBack(const void *input, void *output,
 
     // TODO: handle bagin/end of transmission (open/close rec file)
 
-    // not repeated, used only for break trick
-    while (recFile.isOpen()) {
-        if (recWavFile == NULL) {
-            const int format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
-            const int channels = 1;
-
-            recWavFile = new SndfileHandle(
-                        recFile.handle(), false, SFM_WRITE, format, channels,
-                        demod_zvei.samplerate);
-            if (recWavFile->error()) {
-                delete recWavFile;
-                recWavFile = NULL;
-                break;
-            }
-        }
-
+    if (isRecording()) {
         if (recWavFile->write(buf, frameCount) != frameCount)
-            recFile.close();
-
-        break;
-    }
-
-    if (!recFile.isOpen() && recWavFile != NULL) {
-        delete recWavFile;
-        recWavFile  = NULL;
+            recStop();
     }
 
     return paContinue;
@@ -236,4 +203,47 @@ int MainWindow::paCallBack_(const void *input, void *output,
     MainWindow* mainWin = (MainWindow*)userData;
     return mainWin->paCallBack(input, output, frameCount, timeInfo,
                                statusFlags);
+}
+
+void MainWindow::recStart()
+{
+    if (isRecording())
+        return;
+
+    QDateTime t = QDateTime::currentDateTime();
+    QDateTime tu = t.toUTC();
+    QString recDirName = ui->recDirNameLineEdit->text();
+    int zoneOffs;
+
+    tu.setTimeSpec(t.timeSpec());
+    zoneOffs = tu.secsTo(t) / 3600 * 100;
+
+    if (zoneOffs >= 0)
+        recDirName = recDirName + "/rec_%1+%2.wav";
+    else
+        recDirName = recDirName + "/rec_%1%2.wav";
+    recDirName = recDirName.arg(t.toString(Qt::ISODate));
+    recDirName = recDirName.arg(zoneOffs, 4, 10, QLatin1Char('0'));
+    recFile.setFileName(recDirName);
+
+    if (recFile.open(QFile::WriteOnly)) {
+        const int format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+        const int channels = 1;
+
+        recWavFile = new SndfileHandle(
+                    recFile.handle(), false, SFM_WRITE, format, channels,
+                    demod_zvei.samplerate);
+        if (recWavFile->error()) {
+            recFile.close();
+            delete recWavFile;
+            recWavFile = NULL;
+        }
+    }
+}
+
+void MainWindow::recStop()
+{
+    delete recWavFile;
+    recWavFile = NULL;
+    recFile.close();
 }

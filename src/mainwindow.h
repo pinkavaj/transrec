@@ -46,6 +46,9 @@ private:
                           unsigned long frameCount,
                           const PaStreamCallbackTimeInfo *timeInfo,
                           PaStreamCallbackFlags statusFlags, void *userData);
+    bool isRecording();
+    void recStart();
+    void recStop();
 };
 
 #endif // MAINWINDOW_H
