@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-LIBS     += -lportaudio -lmultimon
+LIBS     += -lportaudio -lmultimon -lsndfile
 QT       += core gui
 
 TARGET = multimon-qt

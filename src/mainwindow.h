@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QMainWindow>
 #include <QSettings>
+#include <sndfile.hh>
 
 namespace Ui {
     class MainWindow;
@@ -30,6 +31,8 @@ private:
     static const char cfgRecDirname[];
 
     QFile logFile;
+    QFile recFile;
+    SndfileHandle *recWavFile;
     QSettings settings;
     PaStream *stream;
     Ui::MainWindow *ui;

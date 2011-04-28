@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTime>
 
 const char MainWindow::cfgLogFileName[] = "log file name";
 const char MainWindow::cfgRecDirname[] = "rec dir name";
@@ -12,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     PaError paError;
 
+    recWavFile = NULL;
     ui->setupUi(this);
     ui->logFileNameLineEdit->setText(
                 settings.value(cfgLogFileName, QString()).toString());
@@ -43,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     demod_zvei.init(&zvei_st);
-    // TODO: ...
+
     paError = Pa_StartStream(this->stream);
     if (paError != paNoError) {
         QMessageBox::critical(this, "Pa_StartStream error.",
@@ -57,9 +59,6 @@ MainWindow::~MainWindow()
 {
     PaError paError;
 
-    settings.setValue(cfgLogFileName, ui->logFileNameLineEdit->text());
-    settings.setValue(cfgRecDirname, ui->recDirNameLineEdit->text());
-
     if (this->stream != NULL) {
         paError = Pa_CloseStream(this->stream);
         if (paError != paNoError)
@@ -71,6 +70,11 @@ MainWindow::~MainWindow()
     if (paError != paNoError)
         QMessageBox::critical(this, "Pa_Terminate error",
                               QString("Error: %1").arg(paError));
+
+    settings.setValue(cfgLogFileName, ui->logFileNameLineEdit->text());
+    settings.setValue(cfgRecDirname, ui->recDirNameLineEdit->text());
+
+    delete recWavFile;
     delete ui;
 }
 
@@ -144,7 +148,26 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
                 return;
             }
         }
+        // FIXME: this is hack for testing pusposes only
+        QDateTime t = QDateTime::currentDateTime();
+        QDateTime tu = t.toUTC();
+        int zoneOffs;
+
+        tu.setTimeSpec(t.timeSpec());
+        zoneOffs = tu.secsTo(t) / 3600 * 100;
+
+        recDirName = recDirName + "/rec_%1%2%3.wav";
+        recDirName = recDirName.arg(t.toString(Qt::ISODate));
+        if (zoneOffs >= 0)
+            recDirName = recDirName.arg("+");
+        else
+            recDirName = recDirName.arg("");
+        recDirName = recDirName.arg(zoneOffs, 4, 10, QLatin1Char('0'));
+        recFile.setFileName(recDirName);
+        recFile.open(QFile::WriteOnly);
     }
+    else
+        recFile.close();
 
     ui->recDirNameLineEdit->setReadOnly(checked);
     ui->recDirNameToolButton->setEnabled(!checked);
@@ -166,11 +189,41 @@ int MainWindow::paCallBack(const void *input, void *output,
 {
     float *buf = (float *)input;
 
-    // TODO: size
     demod_zvei.demod(&zvei_st, buf, frameCount);
-    if (ui->logCheckBox->isChecked()) {
+    // TODO: get demodulated data from zvei
+    if (logFile.isOpen()) {
         // TODO: write output to file
     }
+
+    // TODO: handle bagin/end of transmission (open/close rec file)
+
+    // not repeated, used only for break trick
+    while (recFile.isOpen()) {
+        if (recWavFile == NULL) {
+            const int format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+            const int channels = 1;
+
+            recWavFile = new SndfileHandle(
+                        recFile.handle(), false, SFM_WRITE, format, channels,
+                        demod_zvei.samplerate);
+            if (recWavFile->error()) {
+                delete recWavFile;
+                recWavFile = NULL;
+                break;
+            }
+        }
+
+        if (recWavFile->write(buf, frameCount) != frameCount)
+            recFile.close();
+
+        break;
+    }
+
+    if (!recFile.isOpen() && recWavFile != NULL) {
+        delete recWavFile;
+        recWavFile  = NULL;
+    }
+
     return paContinue;
 }
 
