@@ -26,6 +26,10 @@ private slots:
     void on_recCheckBox_toggled(bool checked);
     void on_recDirNameToolButton_clicked();
 
+    void on_pwrLimitHorizontalSlider_sliderMoved(int position);
+
+    void on_pwrLimitDoubleSpinBox_valueChanged(double );
+
 private:
     static const char cfgLogFileName[];
     static const char cfgRecDirname[];
@@ -38,6 +42,17 @@ private:
     Ui::MainWindow *ui;
     demod_state zvei_st;
 
+    /* Compute signal power of received broadcast */
+    float carrierLastFrame;
+    int carrierPwrRemainFrames;
+    float carrierPwr;
+    // power frame lenght in ms
+    static const int carrierSampleLen;
+    // lenght (ms) of record, when input silences
+    static const int noCarrierRecLen;
+    // ms remaining to stop recording
+    int noCarrierRecDowncount;
+
     int paCallBack(const void *input, void *output,
                    unsigned long frameCount,
                    const PaStreamCallbackTimeInfo *timeInfo,
@@ -46,6 +61,8 @@ private:
                           unsigned long frameCount,
                           const PaStreamCallbackTimeInfo *timeInfo,
                           PaStreamCallbackFlags statusFlags, void *userData);
+
+    bool hasCarrier(float *buf, int frameCount);
     bool isRecording();
     void recStart();
     void recStop();

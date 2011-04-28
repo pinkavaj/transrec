@@ -1,11 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "math.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTime>
 
 const char MainWindow::cfgLogFileName[] = "log file name";
 const char MainWindow::cfgRecDirname[] = "rec dir name";
+const int MainWindow::carrierSampleLen = 20;
+const int MainWindow::noCarrierRecLen = 2 * 1000;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -14,6 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
     PaError paError;
 
     recWavFile = NULL;
+    carrierLastFrame = 0;
+    carrierPwrRemainFrames = 0;
+    carrierPwr = 0;
+    noCarrierRecDowncount = 0;
+
     ui->setupUi(this);
     ui->logFileNameLineEdit->setText(
                 settings.value(cfgLogFileName, QString()).toString());
@@ -76,6 +84,39 @@ MainWindow::~MainWindow()
 
     delete recWavFile;
     delete ui;
+}
+
+bool MainWindow::hasCarrier(float *buf, int frameCount)
+{
+    int frameIdx = 0;
+
+    while (frameCount) {
+        while (carrierPwrRemainFrames && frameCount) {
+            float dl;
+
+            dl = carrierLastFrame - buf[frameIdx];
+            carrierPwr += dl * dl;
+            carrierLastFrame = buf[frameIdx];
+
+            frameIdx++;
+            carrierPwrRemainFrames--;
+            frameCount--;
+        }
+
+        if (carrierPwrRemainFrames == 0) {
+            carrierPwrRemainFrames = demod_zvei.samplerate * carrierSampleLen / 1000;
+
+            if (carrierPwr >= ui->pwrLimitDoubleSpinBox->value()) {
+                carrierLastFrame = buf[frameIdx - 1 + frameCount - 1];
+                carrierPwr = 0;
+                return true;
+            }
+
+            carrierPwr = 0;
+        }
+    }
+
+    return false;
 }
 
 bool MainWindow::isRecording()
@@ -185,10 +226,19 @@ int MainWindow::paCallBack(const void *input, void *output,
     }
 
     // TODO: handle bagin/end of transmission (open/close rec file)
+    if (hasCarrier(buf, frameCount)) {
+        recStart();
+        noCarrierRecDowncount = noCarrierRecLen;
+    }
 
     if (isRecording()) {
         if (recWavFile->write(buf, frameCount) != frameCount)
             recStop();
+
+        if (noCarrierRecDowncount <= 0) {
+            recStop();
+        } else
+            noCarrierRecDowncount -= frameCount * 1000 / demod_zvei.samplerate;
     }
 
     return paContinue;
@@ -246,4 +296,21 @@ void MainWindow::recStop()
     delete recWavFile;
     recWavFile = NULL;
     recFile.close();
+}
+
+void MainWindow::on_pwrLimitHorizontalSlider_sliderMoved(int position)
+{
+    double pos;
+
+    position *= position;
+    pos = (double)position / 1000;
+    ui->pwrLimitDoubleSpinBox->setValue(pos);
+}
+
+void MainWindow::on_pwrLimitDoubleSpinBox_valueChanged(double value)
+{
+    int val;
+
+    val = round(sqrt(value * 1000));
+    ui->pwrLimitHorizontalSlider->setValue(val);
 }
