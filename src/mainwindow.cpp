@@ -20,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     paError = Pa_Initialize();
     if (paError != paNoError) {
-        QMessageBox::critical(this, "Pa_Initialize error",
-                              QString("error: %1").arg(paError));
+        QMessageBox::critical(this, "Pa_Initialize error.",
+                              QString("Error: %1").arg(paError));
         this->close();
         return;
     }
@@ -36,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     paError = Pa_OpenStream(&stream, &inputPar, NULL, demod_zvei.samplerate,
                             0, paNoFlag, paCallBack_, this);
     if (paError != paNoError) {
-        QMessageBox::critical(this, "Pa_OpenDefaultStream error",
-                              QString("error: %1").arg(paError));
+        QMessageBox::critical(this, "Pa_OpenStream error.",
+                              QString("Error: %1").arg(paError));
         this->close();
         return;
     }
@@ -46,8 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // TODO: ...
     paError = Pa_StartStream(this->stream);
     if (paError != paNoError) {
-        QMessageBox::critical(this, "Pa_StartStream error",
-                              QString("error: %1").arg(paError));
+        QMessageBox::critical(this, "Pa_StartStream error.",
+                              QString("Error: %1").arg(paError));
         this->close();
         return;
     }
@@ -76,7 +76,8 @@ int MainWindow::paCallBack_(const void *input, void *output,
                                    void *userData)
 {
     MainWindow* mainWin = (MainWindow*)userData;
-    return mainWin->paCallBack(input, output, frameCount, timeInfo, statusFlags);
+    return mainWin->paCallBack(input, output, frameCount, timeInfo,
+                               statusFlags);
 }
 
 MainWindow::~MainWindow()
@@ -89,14 +90,14 @@ MainWindow::~MainWindow()
     if (this->stream != NULL) {
         paError = Pa_CloseStream(this->stream);
         if (paError != paNoError)
-            QMessageBox::critical(this, "Pa_Terminate error",
-                                  QString("error: %1").arg(paError));
+            QMessageBox::critical(this, "Pa_CloseStream error.",
+                                  QString("Error: %1").arg(paError));
     }
 
     paError = Pa_Terminate();
     if (paError != paNoError)
         QMessageBox::critical(this, "Pa_Terminate error",
-                              QString("error: %1").arg(paError));
+                              QString("Error: %1").arg(paError));
     delete ui;
 }
 
@@ -112,7 +113,8 @@ void MainWindow::on_recDirNameToolButton_clicked()
 {
     QString recDirName;
 
-    recDirName = QFileDialog::getExistingDirectory(this, "Get log file name.");
+    recDirName = QFileDialog::getExistingDirectory(
+                this, "Get recording directory name.");
     ui->recDirNameLineEdit->setText(recDirName);
 }
 
@@ -131,23 +133,27 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
         recDir.setPath(recDirName);
         if (!recDir.exists()) {
             QMessageBox::StandardButton createRecDir;
+            QString msgTitle("Create directory for recording?");
+            QString msgText("Selected directory does not exists.\n"
+                            "Create directory for recoring?\n"
+                            "\"%1\"");
 
-            createRecDir = QMessageBox::question(this,
-                                                 "Create recording directory",
-                                  QString(
-                                      "Selected directory does not exists.\n"
-                                      "Create directory for recoring?\n"
-                                      "\"%1\"").arg(recDirName),
-                                  QMessageBox::Yes | QMessageBox::No);
+            msgText = msgText.arg(recDirName);
+            createRecDir = QMessageBox::question(
+                        this, msgTitle, msgText,
+                        QMessageBox::Yes | QMessageBox::No);
             if (createRecDir != QMessageBox::Yes) {
                 ui->recCheckBox->setChecked(false);
                 return;
             }
             if (!recDir.mkpath(recDir.absolutePath())) {
                 ui->recCheckBox->setChecked(false);
-                QMessageBox::critical(this, "Failed to create directory.",
-                                      QString("Failed to create directory: \"%1\"")
-                                      .arg(recDir.path()));
+
+                QString msgTitle("Failed to create directory.");
+                QString msgText("Failed to create directory: \"%1\".");
+
+                msgText = msgText.arg(recDir.path());
+                QMessageBox::critical(this, msgTitle, msgText);
                 return;
             }
         }
@@ -165,9 +171,9 @@ void MainWindow::on_logCheckBox_toggled(bool checked)
         if (!logFile.open(QFile::Append)) {
             ui->logCheckBox->setChecked(false);
 
-            QString msgTitle("Failed to create/open log file");
+            QString msgTitle("Failed to create/open log file.");
             QString msgText("Failed to create/open file: \"%1\"\n"
-                            "with error: %2");
+                            "with error: %2.");
 
             msgText = msgText.arg(logFile.fileName(), logFile.errorString());
             QMessageBox::critical(this, msgTitle, msgText);
