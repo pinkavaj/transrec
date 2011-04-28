@@ -159,6 +159,23 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
 
 void MainWindow::on_logCheckBox_toggled(bool checked)
 {
+    if (checked) {
+        logFile.setFileName(ui->logFileNameLineEdit->text());
+
+        if (!logFile.open(QFile::Append)) {
+            ui->logCheckBox->setChecked(false);
+
+            QString msgTitle("Failed to create/open log file");
+            QString msgText("Failed to create/open file: \"%1\"\n"
+                            "with error: %2");
+
+            msgText = msgText.arg(logFile.fileName(), logFile.errorString());
+            QMessageBox::critical(this, msgTitle, msgText);
+            return;
+        }
+    } else
+        logFile.close();
+
     ui->logFileToolButton->setEnabled(!checked);
     ui->logFileNameLineEdit->setReadOnly(checked);
 }

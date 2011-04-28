@@ -3,8 +3,10 @@
 
 #include <multimon.h>
 #include <portaudio.h>
+#include <QFile>
 #include <QMainWindow>
 #include <QSettings>
+
 
 namespace Ui {
     class MainWindow;
@@ -28,6 +30,7 @@ private:
     static const char cfgLogFileName[];
     static const char cfgRecDirname[];
 
+    QFile logFile;
     QSettings settings;
     PaStream *stream;
     Ui::MainWindow *ui;
