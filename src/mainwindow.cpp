@@ -117,14 +117,17 @@ void MainWindow::on_recDirNameToolButton_clicked()
 }
 
 void MainWindow::on_recCheckBox_toggled(bool checked)
-{
-    ui->recDirNameLineEdit->setReadOnly(checked);
-    ui->recDirNameToolButton->setEnabled(!checked);
+{    
     if (checked) {
-        QString recDirName;
         QDir recDir;
+        QString recDirName;
 
         recDirName = ui->recDirNameLineEdit->text();
+        if (recDirName.isEmpty()) {
+            ui->recCheckBox->setChecked(false);
+            return;
+        }
+
         recDir.setPath(recDirName);
         if (!recDir.exists()) {
             QMessageBox::StandardButton createRecDir;
@@ -140,10 +143,18 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
                 ui->recCheckBox->setChecked(false);
                 return;
             }
-            //recDir.create_or_so()
+            if (!recDir.mkpath(recDir.absolutePath())) {
+                ui->recCheckBox->setChecked(false);
+                QMessageBox::critical(this, "Failed to create directory.",
+                                      QString("Failed to create directory: \"%1\"")
+                                      .arg(recDir.path()));
+                return;
+            }
         }
     }
-    // TODO: start/ stop recording
+
+    ui->recDirNameLineEdit->setReadOnly(checked);
+    ui->recDirNameToolButton->setEnabled(!checked);
 }
 
 void MainWindow::on_logCheckBox_toggled(bool checked)
