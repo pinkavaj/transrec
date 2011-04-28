@@ -108,13 +108,6 @@ void MainWindow::on_logFileToolButton_clicked()
     ui->logFileNameLineEdit->setText(logFileName);
 }
 
-void MainWindow::on_logFileCheckBox_toggled(bool checked)
-{
-    ui->logFileToolButton->setEnabled(!checked);
-    ui->logFileNameLineEdit->setReadOnly(checked);
-    // TODO: start/stop logging evenst
-}
-
 void MainWindow::on_recDirNameToolButton_clicked()
 {
     QString recDirName;
@@ -151,4 +144,10 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
         }
     }
     // TODO: start/ stop recording
+}
+
+void MainWindow::on_logCheckBox_toggled(bool checked)
+{
+    ui->logFileToolButton->setEnabled(!checked);
+    ui->logFileNameLineEdit->setReadOnly(checked);
 }

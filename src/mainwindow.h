@@ -19,11 +19,10 @@ public:
     ~MainWindow();
 
 private slots:
+    void on_logCheckBox_toggled(bool checked);
     void on_logFileToolButton_clicked();
-    void on_logFileCheckBox_toggled(bool checked);
-    void on_recDirNameToolButton_clicked();
-
     void on_recCheckBox_toggled(bool checked);
+    void on_recDirNameToolButton_clicked();
 
 private:
     static const char cfgLogFileName[];
