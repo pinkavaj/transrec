@@ -7,7 +7,6 @@
 #include <QMainWindow>
 #include <QSettings>
 
-
 namespace Ui {
     class MainWindow;
 }

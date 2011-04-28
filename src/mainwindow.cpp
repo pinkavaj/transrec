@@ -53,33 +53,6 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 }
 
-
-int MainWindow::paCallBack(const void *input, void *output,
-                           unsigned long frameCount,
-                           const PaStreamCallbackTimeInfo *timeInfo,
-                           PaStreamCallbackFlags statusFlags)
-{
-    float *buf = (float *)input;
-
-    // TODO: size
-    demod_zvei.demod(&zvei_st, buf, frameCount);
-    if (ui->logCheckBox->isChecked()) {
-        // TODO: write output to file
-    }
-    return paContinue;
-}
-
-int MainWindow::paCallBack_(const void *input, void *output,
-                                   unsigned long frameCount,
-                                   const PaStreamCallbackTimeInfo *timeInfo,
-                                   PaStreamCallbackFlags statusFlags,
-                                   void *userData)
-{
-    MainWindow* mainWin = (MainWindow*)userData;
-    return mainWin->paCallBack(input, output, frameCount, timeInfo,
-                               statusFlags);
-}
-
 MainWindow::~MainWindow()
 {
     PaError paError;
@@ -101,21 +74,35 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::on_logCheckBox_toggled(bool checked)
+{
+    if (checked) {
+        logFile.setFileName(ui->logFileNameLineEdit->text());
+
+        if (!logFile.open(QFile::Append)) {
+            ui->logCheckBox->setChecked(false);
+
+            QString msgTitle("Failed to create/open log file.");
+            QString msgText("Failed to create/open file: \"%1\"\n"
+                            "with error: %2.");
+
+            msgText = msgText.arg(logFile.fileName(), logFile.errorString());
+            QMessageBox::critical(this, msgTitle, msgText);
+            return;
+        }
+    } else
+        logFile.close();
+
+    ui->logFileToolButton->setEnabled(!checked);
+    ui->logFileNameLineEdit->setReadOnly(checked);
+}
+
 void MainWindow::on_logFileToolButton_clicked()
 {
     QString logFileName;
 
     logFileName = QFileDialog::getSaveFileName(this, "Get log file name.");
     ui->logFileNameLineEdit->setText(logFileName);
-}
-
-void MainWindow::on_recDirNameToolButton_clicked()
-{
-    QString recDirName;
-
-    recDirName = QFileDialog::getExistingDirectory(
-                this, "Get recording directory name.");
-    ui->recDirNameLineEdit->setText(recDirName);
 }
 
 void MainWindow::on_recCheckBox_toggled(bool checked)
@@ -163,25 +150,37 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
     ui->recDirNameToolButton->setEnabled(!checked);
 }
 
-void MainWindow::on_logCheckBox_toggled(bool checked)
+void MainWindow::on_recDirNameToolButton_clicked()
 {
-    if (checked) {
-        logFile.setFileName(ui->logFileNameLineEdit->text());
+    QString recDirName;
 
-        if (!logFile.open(QFile::Append)) {
-            ui->logCheckBox->setChecked(false);
+    recDirName = QFileDialog::getExistingDirectory(
+                this, "Get recording directory name.");
+    ui->recDirNameLineEdit->setText(recDirName);
+}
 
-            QString msgTitle("Failed to create/open log file.");
-            QString msgText("Failed to create/open file: \"%1\"\n"
-                            "with error: %2.");
+int MainWindow::paCallBack(const void *input, void *output,
+                           unsigned long frameCount,
+                           const PaStreamCallbackTimeInfo *timeInfo,
+                           PaStreamCallbackFlags statusFlags)
+{
+    float *buf = (float *)input;
 
-            msgText = msgText.arg(logFile.fileName(), logFile.errorString());
-            QMessageBox::critical(this, msgTitle, msgText);
-            return;
-        }
-    } else
-        logFile.close();
+    // TODO: size
+    demod_zvei.demod(&zvei_st, buf, frameCount);
+    if (ui->logCheckBox->isChecked()) {
+        // TODO: write output to file
+    }
+    return paContinue;
+}
 
-    ui->logFileToolButton->setEnabled(!checked);
-    ui->logFileNameLineEdit->setReadOnly(checked);
+int MainWindow::paCallBack_(const void *input, void *output,
+                                   unsigned long frameCount,
+                                   const PaStreamCallbackTimeInfo *timeInfo,
+                                   PaStreamCallbackFlags statusFlags,
+                                   void *userData)
+{
+    MainWindow* mainWin = (MainWindow*)userData;
+    return mainWin->paCallBack(input, output, frameCount, timeInfo,
+                               statusFlags);
 }
