@@ -7,6 +7,7 @@
 
 const char MainWindow::cfgLogFileName[] = "log file name";
 const char MainWindow::cfgRecDirname[] = "rec dir name";
+const char MainWindow::cfgRecPwrTreshold[] = "rec power treshold";
 const int MainWindow::carrierSampleLen = 20;
 const int MainWindow::noCarrierRecLen = 2 * 1000;
 
@@ -27,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 settings.value(cfgLogFileName, QString()).toString());
     ui->recDirNameLineEdit->setText(
                 settings.value(cfgRecDirname, QString()).toString());
+    ui->pwrLimitDoubleSpinBox->setValue(
+                settings.value(cfgRecPwrTreshold, 0).toDouble());
 
     paError = Pa_Initialize();
     if (paError != paNoError) {
@@ -81,6 +84,7 @@ MainWindow::~MainWindow()
 
     settings.setValue(cfgLogFileName, ui->logFileNameLineEdit->text());
     settings.setValue(cfgRecDirname, ui->recDirNameLineEdit->text());
+    settings.setValue(cfgRecPwrTreshold, ui->pwrLimitDoubleSpinBox->value());
 
     delete recWavFile;
     delete ui;

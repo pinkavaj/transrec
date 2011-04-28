@@ -33,6 +33,7 @@ private slots:
 private:
     static const char cfgLogFileName[];
     static const char cfgRecDirname[];
+    static const char cfgRecPwrTreshold[];
 
     QFile logFile;
     QFile recFile;
