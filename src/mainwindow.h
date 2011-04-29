@@ -21,14 +21,12 @@ public:
     ~MainWindow();
 
 private slots:
+    void on_carrierPwrTresholdDoubleSpinBox_valueChanged(double );
+    void on_carrierPwrTresholdHorizontalSlider_sliderMoved(int position);
     void on_logCheckBox_toggled(bool checked);
     void on_logFileToolButton_clicked();
     void on_recCheckBox_toggled(bool checked);
     void on_recDirNameToolButton_clicked();
-
-    void on_pwrLimitHorizontalSlider_sliderMoved(int position);
-
-    void on_pwrLimitDoubleSpinBox_valueChanged(double );
 
 private:
     static const char cfgLogFileName[];

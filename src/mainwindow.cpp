@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 settings.value(cfgLogFileName, QString()).toString());
     ui->recDirNameLineEdit->setText(
                 settings.value(cfgRecDirname, QString()).toString());
-    ui->pwrLimitDoubleSpinBox->setValue(
+    ui->carrierPwrTresholdDoubleSpinBox->setValue(
                 settings.value(cfgRecPwrTreshold, 0).toDouble());
 
     paError = Pa_Initialize();
@@ -84,7 +84,7 @@ MainWindow::~MainWindow()
 
     settings.setValue(cfgLogFileName, ui->logFileNameLineEdit->text());
     settings.setValue(cfgRecDirname, ui->recDirNameLineEdit->text());
-    settings.setValue(cfgRecPwrTreshold, ui->pwrLimitDoubleSpinBox->value());
+    settings.setValue(cfgRecPwrTreshold, ui->carrierPwrTresholdDoubleSpinBox->value());
 
     delete recWavFile;
     delete ui;
@@ -93,6 +93,7 @@ MainWindow::~MainWindow()
 bool MainWindow::hasCarrier(float *buf, int frameCount)
 {
     int frameIdx = 0;
+    float carrierPwrMax = 0;
 
     while (frameCount) {
         while (carrierPwrRemainFrames && frameCount) {
@@ -110,15 +111,19 @@ bool MainWindow::hasCarrier(float *buf, int frameCount)
         if (carrierPwrRemainFrames == 0) {
             carrierPwrRemainFrames = demod_zvei.samplerate * carrierSampleLen / 1000;
 
-            if (carrierPwr >= ui->pwrLimitDoubleSpinBox->value()) {
+            if (carrierPwr >= ui->carrierPwrTresholdDoubleSpinBox->value()) {
                 carrierLastFrame = buf[frameIdx - 1 + frameCount - 1];
+                ui->carrierPwrDoubleSpinBox->setValue(carrierPwr);
                 carrierPwr = 0;
                 return true;
             }
+            if (carrierPwr > carrierPwrMax)
+                carrierPwrMax = carrierPwr;
 
             carrierPwr = 0;
         }
     }
+    ui->carrierPwrDoubleSpinBox->setValue(carrierPwrMax);
 
     return false;
 }
@@ -302,19 +307,19 @@ void MainWindow::recStop()
     recFile.close();
 }
 
-void MainWindow::on_pwrLimitHorizontalSlider_sliderMoved(int position)
+void MainWindow::on_carrierPwrTresholdHorizontalSlider_sliderMoved(int position)
 {
     double pos;
 
     position *= position;
     pos = (double)position / 1000;
-    ui->pwrLimitDoubleSpinBox->setValue(pos);
+    ui->carrierPwrTresholdDoubleSpinBox->setValue(pos);
 }
 
-void MainWindow::on_pwrLimitDoubleSpinBox_valueChanged(double value)
+void MainWindow::on_carrierPwrTresholdDoubleSpinBox_valueChanged(double value)
 {
     int val;
 
     val = round(sqrt(value * 1000));
-    ui->pwrLimitHorizontalSlider->setValue(val);
+    ui->carrierPwrTresholdHorizontalSlider->setValue(val);
 }
