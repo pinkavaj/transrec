@@ -65,6 +65,10 @@ private:
     bool isRecording();
     void recStart();
     void recStop();
+
+    void zveiCallback(int state, const unsigned char *data, int len);
+    static void zveiCallback_(void *p, int state, const unsigned char *data,
+                              int len);
 };
 
 #endif // MAINWINDOW_H

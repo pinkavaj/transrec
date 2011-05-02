@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
-    demod_zvei.init(&zvei_st);
+    demod_zvei.init(&zvei_st, zveiCallback_, this);
 
     paError = Pa_StartStream(this->stream);
     if (paError != paNoError) {
@@ -322,4 +322,24 @@ void MainWindow::on_carrierPwrTresholdDoubleSpinBox_valueChanged(double value)
 
     val = round(sqrt(value * 1000));
     ui->carrierPwrTresholdHorizontalSlider->setValue(val);
+}
+
+void MainWindow::zveiCallback_(void *p, int state, const unsigned char *data,
+                               int len)
+{
+    ((MainWindow*)p)->zveiCallback(state, data, len);
+}
+
+void MainWindow::zveiCallback(int state, const unsigned char *data, int len)
+{
+    int rowIdx = ui->logTableWidget->rowCount();
+    QString str;
+
+    ui->logTableWidget->insertRow(rowIdx);
+    str = QDateTime::currentDateTime().toString(Qt::ISODate);
+    ui->logTableWidget->setItem(rowIdx, 0, new QTableWidgetItem(str));
+    str = QString("%1").arg((int)data);
+    ui->logTableWidget->setItem(rowIdx, 1, new QTableWidgetItem(str));
+    str = QString("Not available");
+    ui->logTableWidget->setItem(rowIdx, 2, new QTableWidgetItem(str));
 }

@@ -10,6 +10,9 @@ QT       += core gui
 TARGET = multimon-qt
 TEMPLATE = app
 
+win32 {
+        INCLUDEPATH += "c:\Program Files\Mega-Nerd\libsndfile\include"
+}
 
 SOURCES += main.cpp\
         mainwindow.cpp

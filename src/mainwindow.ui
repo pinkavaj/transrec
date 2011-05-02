@@ -22,18 +22,15 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1" colspan="4">
+    <item row="0" column="1" colspan="3">
      <widget class="QLineEdit" name="logFileNameLineEdit"/>
     </item>
-    <item row="0" column="5">
+    <item row="0" column="4">
      <widget class="QToolButton" name="logFileToolButton">
       <property name="text">
        <string>...</string>
       </property>
      </widget>
-    </item>
-    <item row="4" column="0" rowspan="3" colspan="6">
-     <widget class="QPlainTextEdit" name="logPlainTextEdit"/>
     </item>
     <item row="1" column="0">
      <widget class="QCheckBox" name="recCheckBox">
@@ -42,14 +39,14 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="5">
+    <item row="1" column="4">
      <widget class="QToolButton" name="recDirNameToolButton">
       <property name="text">
        <string>...</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="1" colspan="4">
+    <item row="1" column="1" colspan="3">
      <widget class="QLineEdit" name="recDirNameLineEdit"/>
     </item>
     <item row="2" column="0">
@@ -100,6 +97,25 @@
       <property name="text">
        <string>Current level:</string>
       </property>
+     </widget>
+    </item>
+    <item row="4" column="0" colspan="5">
+     <widget class="QTableWidget" name="logTableWidget">
+      <column>
+       <property name="text">
+        <string>Time</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Code</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Description</string>
+       </property>
+      </column>
      </widget>
     </item>
    </layout>
