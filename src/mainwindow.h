@@ -66,6 +66,7 @@ private:
     void recStart();
     void recStop();
 
+    unsigned char zveiLastChar;
     void zveiCallback(int state, const unsigned char *data, int len);
     static void zveiCallback_(void *p, int state, const unsigned char *data,
                               int len);

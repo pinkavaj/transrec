@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     carrierPwrRemainFrames = 0;
     carrierPwr = 0;
     noCarrierRecDowncount = 0;
+    zveiLastChar = 0xf;
 
     ui->setupUi(this);
     ui->logFileNameLineEdit->setText(
@@ -332,14 +333,39 @@ void MainWindow::zveiCallback_(void *p, int state, const unsigned char *data,
 
 void MainWindow::zveiCallback(int state, const unsigned char *data, int len)
 {
-    int rowIdx = ui->logTableWidget->rowCount();
+    int rowIdx = ui->logTableWidget->rowCount() - 1;
     QString str;
 
-    ui->logTableWidget->insertRow(rowIdx);
-    str = QDateTime::currentDateTime().toString(Qt::ISODate);
-    ui->logTableWidget->setItem(rowIdx, 0, new QTableWidgetItem(str));
-    str = QString("%1").arg((int)data);
-    ui->logTableWidget->setItem(rowIdx, 1, new QTableWidgetItem(str));
-    str = QString("Not available");
-    ui->logTableWidget->setItem(rowIdx, 2, new QTableWidgetItem(str));
+    // no data
+    if ((zveiLastChar == 0xf && *data == 0xf) || len < 1)
+        return;
+
+    // start of new sequence
+    if (zveiLastChar == 0xf) {
+        rowIdx++;
+        ui->logTableWidget->insertRow(rowIdx);
+
+        str = QDateTime::currentDateTime().toString(Qt::ISODate);
+        ui->logTableWidget->setItem(rowIdx, 0, new QTableWidgetItem(str));
+    }
+    zveiLastChar = *data;
+
+    QTableWidgetItem *cell;
+
+    if (zveiLastChar != 0xf) {
+        cell = (QTableWidgetItem*)ui->logTableWidget->item(rowIdx, 1);
+        if (cell == NULL) {
+            cell = new QTableWidgetItem();
+            str = QString();
+        }
+        else
+            str = cell->text();
+
+        str = str + QString("%1").arg(zveiLastChar);
+        ui->logTableWidget->setItem(rowIdx, 1, new QTableWidgetItem(str));
+    }
+    else {
+        str = QString("Not available");
+        ui->logTableWidget->setItem(rowIdx, 2, new QTableWidgetItem(str));
+    }
 }
