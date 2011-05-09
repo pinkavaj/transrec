@@ -1,0 +1,1 @@
+dlltool -d libsndfile-1.def ..\bin\libsndfile-1.dll --output-lib libsndfile-1.dll.a

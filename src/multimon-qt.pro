@@ -4,14 +4,22 @@
 #
 #-------------------------------------------------
 
-LIBS     += -lportaudio -lmultimon -lsndfile
+LIBS     += -lmultimon -lportaudio
+# UNIX only
+#LIBS     +=  -lsndfile
 QT       += core gui
 
 TARGET = multimon-qt
 TEMPLATE = app
 
 win32 {
-        INCLUDEPATH += "c:\Program Files\Mega-Nerd\libsndfile\include"
+        INCLUDEPATH += "C:\Program Files\Mega-Nerd\libsndfile\include"
+        INCLUDEPATH += "..\..\multimon-lib\src\include"
+        INCLUDEPATH += "C:\portaudio\include"
+
+        LIBS     += -L"C:\Program Files\Mega-Nerd\libsndfile\lib" libsndfile-1.dll
+        LIBS     += -L"..\..\multimon-lib\src\build"
+        LIBS     += -L"C:\portaudio\lib\.libs" 
 }
 
 SOURCES += main.cpp\
