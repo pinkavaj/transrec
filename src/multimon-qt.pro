@@ -22,6 +22,11 @@ win32 {
         LIBS     += -L"C:\portaudio\lib\.libs" 
 }
 
+unix {
+    INCLUDEPATH += /usr/local/include
+    LIBS     += -L/usr/local/lib -lsndfile
+}
+
 SOURCES += main.cpp\
         mainwindow.cpp
 

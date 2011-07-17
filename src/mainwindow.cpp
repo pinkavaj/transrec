@@ -325,19 +325,18 @@ void MainWindow::on_carrierPwrTresholdDoubleSpinBox_valueChanged(double value)
     ui->carrierPwrTresholdHorizontalSlider->setValue(val);
 }
 
-void MainWindow::zveiCallback_(void *p, int state, const unsigned char *data,
-                               int len)
+void MainWindow::zveiCallback_(char data, int state, void *p)
 {
-    ((MainWindow*)p)->zveiCallback(state, data, len);
+    ((MainWindow*)p)->zveiCallback(state, data);
 }
 
-void MainWindow::zveiCallback(int state, const unsigned char *data, int len)
+void MainWindow::zveiCallback(char data, int state)
 {
     int rowIdx = ui->logTableWidget->rowCount() - 1;
     QString str;
 
     // no data
-    if ((zveiLastChar == 0xf && *data == 0xf) || len < 1)
+    if ((zveiLastChar == 0xf && data == 0xf) || state != 0)
         return;
 
     // start of new sequence
@@ -348,7 +347,7 @@ void MainWindow::zveiCallback(int state, const unsigned char *data, int len)
         str = QDateTime::currentDateTime().toString(Qt::ISODate);
         ui->logTableWidget->setItem(rowIdx, 0, new QTableWidgetItem(str));
     }
-    zveiLastChar = *data;
+    zveiLastChar = data;
 
     QTableWidgetItem *cell;
 

@@ -67,9 +67,8 @@ private:
     void recStop();
 
     unsigned char zveiLastChar;
-    void zveiCallback(int state, const unsigned char *data, int len);
-    static void zveiCallback_(void *p, int state, const unsigned char *data,
-                              int len);
+    void zveiCallback(char data, int state);
+    static void zveiCallback_(char data, int state, void *p);
 };
 
 #endif // MAINWINDOW_H
