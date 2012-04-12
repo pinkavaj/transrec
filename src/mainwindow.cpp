@@ -13,17 +13,22 @@ const int MainWindow::noCarrierRecLen = 2 * 1000;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
+    recTimer(this),
     ui(new Ui::MainWindow)
 {
     PaError paError;
 
-    recWavFile = NULL;
     carrierLastFrame = 0;
     carrierPwrRemainFrames = 0;
     carrierPwr = 0;
+    carrierPwr_ = 0;
     noCarrierRecDowncount = 0;
+    recTimer.setSingleShot(false);
+    recTimer.start(500);
+    recWavFile = NULL;
     zveiLastChar = 0xf;
 
+    recTimer.setObjectName("recTimer");
     ui->setupUi(this);
     ui->logFileNameLineEdit->setText(
                 settings.value(cfgLogFileName, QString()).toString());
@@ -95,38 +100,36 @@ bool MainWindow::hasCarrier(float *buf, int frameCount)
 {
     int frameIdx = 0;
     float carrierPwrMax = 0;
+    bool carrier = false;
 
-    while (frameCount) {
-        while (carrierPwrRemainFrames && frameCount) {
-            float dl;
+    while (frameIdx < frameCount) {
+        while (carrierPwrRemainFrames && frameIdx < frameCount) {
+            double dl;
 
             dl = carrierLastFrame - buf[frameIdx];
-            carrierPwr += dl * dl;
+            carrierPwr_ += dl * dl;
             carrierLastFrame = buf[frameIdx];
 
             frameIdx++;
-            carrierPwrRemainFrames--;
-            frameCount--;
+            --carrierPwrRemainFrames;
         }
 
         if (carrierPwrRemainFrames == 0) {
             carrierPwrRemainFrames = demod_zvei.samplerate * carrierSampleLen / 1000;
 
-            if (carrierPwr >= ui->carrierPwrTresholdDoubleSpinBox->value()) {
-                carrierLastFrame = buf[frameIdx - 1 + frameCount - 1];
-                ui->carrierPwrDoubleSpinBox->setValue(carrierPwr);
-                carrierPwr = 0;
-                return true;
+            if (carrierPwr_ >= carrierPwrTreshold) {
+                carrier = true;
             }
-            if (carrierPwr > carrierPwrMax)
-                carrierPwrMax = carrierPwr;
+            if (carrierPwr_ > carrierPwrMax) {
+                carrierPwrMax = carrierPwr_;
+                carrierPwr = carrierPwrMax;
+            }
 
-            carrierPwr = 0;
+            carrierPwr_ = 0;
         }
     }
-    ui->carrierPwrDoubleSpinBox->setValue(carrierPwrMax);
 
-    return false;
+    return carrier;
 }
 
 bool MainWindow::isRecording()
@@ -216,16 +219,21 @@ void MainWindow::on_recCheckBox_toggled(bool checked)
 void MainWindow::on_recDirNameToolButton_clicked()
 {
     QString recDirName;
-
+;
     recDirName = QFileDialog::getExistingDirectory(
                 this, "Get recording directory name.");
     ui->recDirNameLineEdit->setText(recDirName);
 }
 
-int MainWindow::paCallBack(const void *input, void *output,
+void MainWindow::on_recTimer_timeout()
+{
+    ui->carrierPwrDoubleSpinBox->setValue(carrierPwr);
+}
+
+int MainWindow::paCallBack(const void *input, void * /*output*/,
                            unsigned long frameCount,
-                           const PaStreamCallbackTimeInfo *timeInfo,
-                           PaStreamCallbackFlags statusFlags)
+                           const PaStreamCallbackTimeInfo */*timeInfo*/,
+                           PaStreamCallbackFlags /*statusFlags*/)
 {
     float *buf = (float *)input;
 
@@ -310,11 +318,12 @@ void MainWindow::recStop()
 
 void MainWindow::on_carrierPwrTresholdHorizontalSlider_sliderMoved(int position)
 {
-    double pos;
+    double val;
 
     position *= position;
-    pos = (double)position / 1000;
-    ui->carrierPwrTresholdDoubleSpinBox->setValue(pos);
+    val = (double)position / 1000.;
+    ui->carrierPwrTresholdDoubleSpinBox->setValue(val);
+    carrierPwrTreshold = val;
 }
 
 void MainWindow::on_carrierPwrTresholdDoubleSpinBox_valueChanged(double value)
@@ -323,6 +332,7 @@ void MainWindow::on_carrierPwrTresholdDoubleSpinBox_valueChanged(double value)
 
     val = round(sqrt(value * 1000));
     ui->carrierPwrTresholdHorizontalSlider->setValue(val);
+    carrierPwrTreshold = val;
 }
 
 void MainWindow::zveiCallback_(char data, int state, void *p)

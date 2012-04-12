@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QMainWindow>
 #include <QSettings>
+#include <QTimer>
 #include <sndfile.hh>
 
 namespace Ui {
@@ -27,6 +28,7 @@ private slots:
     void on_logFileToolButton_clicked();
     void on_recCheckBox_toggled(bool checked);
     void on_recDirNameToolButton_clicked();
+    void on_recTimer_timeout();
 
 private:
     static const char cfgLogFileName[];
@@ -35,19 +37,32 @@ private:
 
     QFile logFile;
     QFile recFile;
+
+    /** Used to update Qt widgets by recieved data asynchronously. */
+    QTimer recTimer;
     SndfileHandle *recWavFile;
-    QSettings settings;
     PaStream *stream;
+    QSettings settings;
     Ui::MainWindow *ui;
     demod_state zvei_st;
 
-    /* Compute signal power of received broadcast */
+    /** Value of last audio sample. */
     float carrierLastFrame;
     int carrierPwrRemainFrames;
-    float carrierPwr;
-    // power frame lenght in ms
+
+    /** Last computed value of DC signal power. */
+    double carrierPwr;
+
+    /** Used to store temporar value diring carrier RMS computation. */
+    double carrierPwr_;
+
+    /** Treshold used for start of recording. */
+    double carrierPwrTreshold;
+
+    /** Power measurement frame lenght in ms. */
     static const int carrierSampleLen;
-    // lenght (ms) of record, when input silences
+
+    // lenght (ms) of record, when input is silent
     static const int noCarrierRecLen;
     // ms remaining to stop recording
     int noCarrierRecDowncount;
