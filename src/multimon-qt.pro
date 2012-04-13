@@ -13,18 +13,21 @@ TARGET = multimon-qt
 TEMPLATE = app
 
 win32 {
-        INCLUDEPATH += "C:\Program Files\Mega-Nerd\libsndfile\include"
-        INCLUDEPATH += "..\..\multimon-lib\src\include"
-        INCLUDEPATH += "C:\portaudio\include"
+    INCLUDEPATH += "C:\Program Files\Mega-Nerd\libsndfile\include"
+    INCLUDEPATH += "..\..\multimon-lib\src\include"
+    INCLUDEPATH += "C:\portaudio\include"
 
-        LIBS     += -L"C:\Program Files\Mega-Nerd\libsndfile\lib" libsndfile-1.dll
-        LIBS     += -L"..\..\multimon-lib\src\build"
-        LIBS     += -L"C:\portaudio\lib\.libs" 
+    LIBS     += -L"C:\Program Files\Mega-Nerd\libsndfile\lib" libsndfile-1.dll
+    LIBS     += -L"..\..\multimon-lib\src\build"
+    LIBS     += -L"C:\portaudio\lib\.libs"
 }
 
 unix {
+    INCLUDEPATH += ../../multimon-lib/src/include
     INCLUDEPATH += /usr/local/include
-    LIBS     += -L/usr/local/lib -lsndfile
+
+    LIBS        += -L../../multimon-lib/src/build
+    LIBS        += -L/usr/local/lib -lsndfile
 }
 
 SOURCES += main.cpp\
